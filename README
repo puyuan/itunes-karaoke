@@ -1,0 +1,6 @@
+Itunes Karaoke
+---------------------------------
+
+This application uses itunes sdk to read and write music lyrics to itunes. Only runs on windows.
+
+Click on ituneskaraoke.hta to start the program

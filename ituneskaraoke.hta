@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- Framework CSS -->
+    <link rel="stylesheet" href="blueprint/screen.css" type="text/css" media="screen, projection">
+    <link rel="stylesheet" href="blueprint/print.css" type="text/css" media="print">
+
+    <!--[if lt IE 8]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+
+    <!-- Import fancy-type plugin for the sample page. -->
+    <link rel="stylesheet" href="blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
+
+<title>Itunes Karaoke Player</title>
+<HTA:APPLICATION 
+     APPLICATIONNAME="Itunes Lyrics Player"
+     SCROLL="yes"
+     SINGLEINSTANCE="yes"
+     WINDOWSTATE="maximize"
+>
+</head>
+ <script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
+ <script type="text/javascript" src="js/effects.core.js"></script>
+ <script type="text/javascript" src="js/effects.highlight.js"></script>
+
+<script language="Javascript">
+
+	edit=false;
+
+
+
+function displayLyric(){
+var ITTrackKindFile	= 1;
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+var	deletedTracks = 0;
+iTunesApp.Play();
+
+var lyric_dom=document.getElementById("lyrics");
+var title_dom=document.getElementById("header");
+title_dom.innerHTML= "<h1>"+iTunesApp.CurrentTrack.Name+" - "+iTunesApp.CurrentTrack.Artist+"</h1>" 
+
+//setup lyrics
+var lyric=iTunesApp.CurrentTrack.Lyrics
+var lyric_arr=lyric.split("\n");
+var displaylyric=""
+for(var i=0; i<lyric_arr.length; i++){
+	var time=lyric_arr[i].match(/#(\d*)#/);
+	if(time){
+		time=time[1];
+		displaylyric+="<span id='"+ time+"'>"+lyric_arr[i]+"</span><br/>";
+	}
+	else
+		displaylyric+="<span>"+lyric_arr[i]+"</span><br/>";
+
+}
+
+
+lyric_dom.innerHTML= "<h1>"+displaylyric+"</h1>";
+//iTunesApp.Play();
+var	mainLibrary = iTunesApp.LibraryPlaylist;
+var	tracks = mainLibrary.Tracks;
+var	numTracks = tracks.Count;
+var	i
+
+
+
+
+
+}
+
+function fastforward(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+iTunesApp.FastForward();
+displayLyric();
+
+
+}
+function resume(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+iTunesApp.Resume();
+displayLyric();
+}
+
+
+
+function del(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+iTunesApp.CurrentTrack.Delete();
+next();
+
+
+}
+
+function previous(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+iTunesApp.PreviousTrack();
+displayLyric();
+
+
+}
+
+
+function next(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+iTunesApp.NextTrack();
+displayLyric();
+
+
+}
+function position(){
+var	iTunesApp = new ActiveXObject("iTunes.Application");
+return iTunesApp.PlayerPosition;
+
+
+}
+
+function checkTime(){
+	var	iTunesApp = new ActiveXObject("iTunes.Application");
+	var dom=$("#"+(parseInt(position())+1))
+	if(dom.length>0 && !edit){
+	try{
+	$('html,body').animate({scrollTop: $("#"+(parseInt(position())+1)).offset().top-100},500);
+	$("#"+(parseInt(position())+1)).effect("highlight", {}, 6000);
+	}
+	catch(err){
+
+	}
+	}
+
+}
+
+function start(){
+	displayLyric();
+	setInterval("checkTime()", 1000);
+}
+
+function addLyric(){
+	var lyricform_dom=document.getElementById("addLyric");
+	lyricform_dom.style.display="block";
+	var lyric_url=document.getElementById("lyric_url");
+	var	iTunesApp = new ActiveXObject("iTunes.Application");
+	var trackName=iTunesApp.CurrentTrack.Name;
+	lyric_url.href="http://www.kkbox.com.tw/search_utf8.php?act=search&search=lyrics&word="+trackName;
+	displayLyric();
+
+
+	
+
+}
+
+function saveLyric(){
+	var lyric=""
+	$("span").each(function(){
+		lyric+=$(this).html()+"\n"
+		
+	})
+
+	var	iTunesApp = new ActiveXObject("iTunes.Application");
+	iTunesApp.CurrentTrack.Lyrics=lyric;
+
+
+	
+
+}
+function submitLyric(){
+	var lyricform_dom=document.getElementById("addLyric");
+	lyricform_dom.style.display="none";
+	var lyric_text=document.getElementById("lyric_text");
+	if(lyric_text.value!="" && lyric_text.value){
+		var	iTunesApp = new ActiveXObject("iTunes.Application");
+		iTunesApp.CurrentTrack.Lyrics=lyric_text.value;
+
+	}
+
+}
+
+function toggle_edit(){
+if(!edit){
+	$("#edit_mode").css("display", "block");
+	edit=true;
+
+}
+else{
+	$("#edit_mode").css("display", "none");
+	edit=false;
+	displayLyric();
+	
+
+}
+
+}
+
+$(function(){
+	start();
+
+
+	$("span").live("click", function(){
+	   if(edit){
+		if(!$(this).html().match(/#\d*#/))
+			$(this).prepend("#"+position()+"# ");
+	        else
+			$(this).html($(this).html().replace(/#\d*#/, "#"+position()+"#"));
+			}
+		saveLyric();
+			
+			
+		
+	})
+	$("span").live("dblclick", function(){
+		var time=$(this).html().match(/#(\d*)#/);
+		if(time){
+		time=time[1];
+		var	iTunesApp = new ActiveXObject("iTunes.Application");
+		iTunesApp.PlayerPosition=time;
+
+		}
+			
+		
+	})
+
+	
+})
+
+
+</script>
+
+<body >
+<div class="container">
+
+<div id="header" class="span-24">
+
+</div>
+<div id="controls" class="span-24 last box" >
+	<input type="submit" value="Next" onClick="next()"></input>
+	<input type="submit" value="Previous" onClick="previous()"></input>
+	<input type="submit" value="Fast Forward" onClick="fastforward()"></input>
+	<input type="submit" value="Resume" onClick="resume()"></input>
+	<input type="submit" value="Delete" onClick="del()"></input>
+	<input type="submit" value="Add Lyric" onClick="addLyric()"></input>
+	<input type="submit" value="Toggle Edit" onClick="toggle_edit()"></input>
+
+</div>
+<hr/>
+
+<div id="addLyric"  class="span-24 box last" style="display:none;">
+	<h3>Add lyrics here</h3>
+	<h2><a href="" id="lyric_url">Copy this link</a></h2>
+	<textarea id="lyric_text" name="comments" cols="40" rows="5" ></textarea>
+	<br/>
+	<input type="submit" value="Add" onClick="submitLyric()"></input>
+</div>
+<div id="edit_mode" style="display:none;"><h3>Edit mode</h3></div>
+
+<div id="lyrics" class="span-24">
+
+
+</div>
+</div>
+
+</body>
+
+</html>
